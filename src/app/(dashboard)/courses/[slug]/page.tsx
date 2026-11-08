@@ -19,7 +19,7 @@ export default function CourseReaderPage({ params }: { params: { slug: string } 
           </Link>
         }
       />
-      <div className="p-6 max-w-3xl mx-auto">
+      <div className="mx-auto max-w-3xl p-4 sm:p-6">
         <article className="bg-surface-low border border-border rounded-xl p-8 space-y-4">
           <div className="text-xs font-mono text-accent-blue uppercase">{course.category} TRACK</div>
           <h2 className="text-xl font-bold text-text-primary">{course.title}</h2>

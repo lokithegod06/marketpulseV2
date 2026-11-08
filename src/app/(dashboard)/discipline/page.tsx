@@ -34,7 +34,7 @@ export default function DisciplinePage() {
         title="Discipline & Trading History"
         subtitle="Your score and streak are based on your own logged trades"
       />
-      <div className="mx-auto max-w-[1500px] space-y-5 p-6">
+      <div className="mx-auto max-w-[1500px] space-y-5 p-4 sm:p-6">
         {error && (
           <div role="alert" className="rounded-lg border border-accent-red/30 bg-accent-red/10 p-3 text-xs text-accent-red">
             {error}
@@ -62,7 +62,7 @@ export default function DisciplinePage() {
         {data?.hasActivity && (
           <>
             <section className="grid gap-5 lg:grid-cols-3">
-              <div className="flex items-center gap-6 rounded-xl border border-border bg-surface-low p-5">
+              <div className="flex items-center gap-4 rounded-xl border border-border bg-surface-low p-4 sm:gap-6 sm:p-5">
                 <ScoreRing score={data.currentScore ?? 0} />
                 <div>
                   <h2 className="text-sm font-semibold text-text-primary">Current discipline score</h2>

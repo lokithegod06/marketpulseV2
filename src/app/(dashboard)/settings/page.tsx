@@ -22,8 +22,8 @@ export default function SettingsPage() {
         title="Terminal & Guardrail Settings"
         subtitle="Manage your profile, leaderboard privacy, and daily discipline rules"
       />
-      <div className="p-6 max-w-3xl mx-auto">
-        <form onSubmit={handleSave} className="bg-surface-low border border-border rounded-xl p-6 space-y-5">
+      <div className="mx-auto max-w-3xl p-4 sm:p-6">
+        <form onSubmit={handleSave} className="space-y-5 rounded-xl border border-border bg-surface-low p-4 sm:p-6">
           <div>
             <label className="block text-xs text-text-secondary mb-1">Public Leaderboard Handle</label>
             <input

@@ -176,7 +176,7 @@ export default function TradeJournalPage() {
         }
       />
 
-      <div className="p-6 max-w-[1500px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="mx-auto grid max-w-[1500px] grid-cols-1 gap-4 p-4 sm:gap-5 sm:p-6 lg:grid-cols-12">
         {error && (
           <div className="lg:col-span-12 rounded-lg border border-accent-red/30 bg-accent-red/10 p-3 text-xs text-accent-red">
             {error}

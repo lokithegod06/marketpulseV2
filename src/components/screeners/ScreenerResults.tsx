@@ -17,7 +17,8 @@ export function ScreenerResults({
         </h3>
         <span className="text-[10px] font-mono text-text-muted">{source}</span>
       </div>
-      <table className="w-full text-left border-collapse">
+      <div className="w-full overflow-x-auto">
+      <table className="w-full min-w-[620px] border-collapse text-left">
         <thead>
           <tr className="border-b border-border text-[10px] text-text-secondary uppercase">
             <th className="py-2 px-3">NSE Symbol</th>
@@ -43,6 +44,7 @@ export function ScreenerResults({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

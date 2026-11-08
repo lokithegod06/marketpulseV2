@@ -19,8 +19,9 @@ export function WatchlistTable({
   }
 
   return (
-    <div className="bg-surface-low border border-border rounded-xl p-5">
-      <table className="w-full text-left border-collapse">
+    <div className="rounded-xl border border-border bg-surface-low p-3 sm:p-5">
+      <div className="w-full overflow-x-auto">
+      <table className="w-full min-w-[820px] border-collapse text-left">
         <thead>
           <tr className="border-b border-border text-[10px] text-text-secondary uppercase">
             <th className="py-2 px-3">Symbol</th>
@@ -39,7 +40,10 @@ export function WatchlistTable({
             const up = item.change >= 0
             return (
               <tr key={item.symbol} className="border-b border-border/50 hover:bg-surface-high/40">
-                <td className="py-3 px-3 font-semibold text-text-primary">{item.symbol}</td>
+                <td className="py-3 px-3">
+                  <div className="font-semibold text-text-primary">{item.symbol}</div>
+                  <div className="text-[9px] text-text-muted">{item.source ?? "Sample quote"}</div>
+                </td>
                 <td className="py-3 px-3 text-[11px] text-text-muted">{item.sector}</td>
                 <td className="py-3 px-3 font-mono">₹{item.ltp.toLocaleString("en-IN")}</td>
                 <td className={`py-3 px-3 font-mono ${up ? "text-accent-green" : "text-accent-red"}`}>
@@ -83,6 +87,7 @@ export function WatchlistTable({
           )}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

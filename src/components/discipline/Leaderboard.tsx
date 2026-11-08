@@ -39,7 +39,8 @@ export function LeaderboardTable() {
       <p className="text-[11px] text-text-muted mb-4">
         Example leaderboard profiles and performance; real trader rankings will be added when the platform launches.
       </p>
-      <table className="w-full text-left border-collapse">
+      <div className="w-full overflow-x-auto">
+      <table className="w-full min-w-[760px] border-collapse text-left">
         <thead>
           <tr className="border-b border-border text-[10px] text-text-secondary uppercase">
             <th className="py-2 px-3">Rank</th>
@@ -89,6 +90,7 @@ export function LeaderboardTable() {
           ))}
         </tbody>
       </table>
+      </div>
       <div className="text-center text-[11px] text-text-muted pt-3">
         Showing top {filtered.length} of 1,420 registered pro traders across India
       </div>

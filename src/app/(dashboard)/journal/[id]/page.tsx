@@ -16,7 +16,7 @@ export default function TradeDetailPage({ params }: { params: { id: string } }) 
           </Link>
         }
       />
-      <div className="p-6 max-w-3xl mx-auto">
+      <div className="mx-auto max-w-3xl p-4 sm:p-6">
         <div className="bg-surface-low border border-border rounded-xl p-6 space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-mono font-semibold text-accent-green">BANKNIFTY 29AUG 51200 CE</span>

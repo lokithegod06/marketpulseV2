@@ -24,7 +24,7 @@ export default function CoursesPage() {
         }
       />
 
-      <div className="p-6 max-w-[1500px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="mx-auto grid max-w-[1500px] grid-cols-1 gap-4 p-4 sm:p-6 md:grid-cols-2 lg:grid-cols-3">
         {DEFAULT_COURSES.map((c) => (
           <div
             key={c.id}

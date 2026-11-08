@@ -13,9 +13,9 @@ const TICKER_ITEMS = [
 
 export function TickerStrip() {
   return (
-    <div className="bg-surface-base border-b border-border px-6 py-1.5 flex items-center gap-6 overflow-x-auto min-h-[32px] select-none">
+    <div className="flex min-h-[32px] select-none items-center gap-4 overflow-x-auto border-b border-border bg-surface-base px-3 py-1.5 sm:gap-6 sm:px-6">
       {TICKER_ITEMS.map((item, idx) => (
-        <div key={item.label} className="flex items-center gap-6 shrink-0">
+        <div key={item.label} className="flex shrink-0 items-center gap-4 sm:gap-6">
           <div className="flex items-center gap-2 whitespace-nowrap">
             <span className="text-[10px] text-text-secondary font-medium tracking-wider">
               {item.label}

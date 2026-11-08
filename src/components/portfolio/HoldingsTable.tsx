@@ -29,7 +29,7 @@ export function HoldingsTable({
 
   return (
     <div className="bg-surface-low border border-border rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-[13px] font-semibold text-text-primary">Holdings</h3>
         <div className="flex gap-1 bg-surface-base p-1 rounded-lg border border-border text-[11px]">
           <button
@@ -56,7 +56,8 @@ export function HoldingsTable({
         </div>
       </div>
 
-      <table className="w-full text-left border-collapse">
+      <div className="w-full overflow-x-auto">
+      <table className="w-full min-w-[820px] border-collapse text-left">
         <thead>
           <tr className="border-b border-border text-[10px] text-text-secondary uppercase">
             <th className="py-2 px-3">Stock</th>
@@ -117,6 +118,7 @@ export function HoldingsTable({
           )}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

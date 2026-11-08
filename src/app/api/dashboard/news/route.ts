@@ -7,11 +7,14 @@ export async function GET() {
     const user = await getSessionOrDemoUser()
     const { items, source } = await getCuratedNewsWithSource()
     const isPro = user.plan === "PRO"
-    return NextResponse.json({
-      items: isPro ? items : items.slice(0, 3),
-      isPro,
-      source,
-    })
+    return NextResponse.json(
+      {
+        items: isPro ? items : items.slice(0, 3),
+        isPro,
+        source,
+      },
+      { headers: { "Cache-Control": "no-store, max-age=0" } }
+    )
   } catch (err) {
     return NextResponse.json({ error: "Failed to fetch news wire", detail: String(err) }, { status: 500 })
   }
