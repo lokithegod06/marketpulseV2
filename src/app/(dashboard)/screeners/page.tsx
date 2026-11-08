@@ -62,7 +62,7 @@ export default function ScreenersPage() {
         title="Screeners"
         subtitle="App-managed scans · Free screeners and Pro-only ChartInk scans"
       />
-      <div className="p-6 max-w-[1500px] mx-auto">
+      <div className="mx-auto max-w-[1500px] p-4 sm:p-6">
         {error && (
           <div
             role="status"

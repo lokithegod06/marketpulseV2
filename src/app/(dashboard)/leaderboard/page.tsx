@@ -8,7 +8,7 @@ export default function LeaderboardPage() {
         title="Trader Discipline Leaderboard"
         subtitle="Sample trader profiles; live rankings will be added when the platform launches"
       />
-      <div className="p-6 max-w-[1500px] mx-auto">
+      <div className="mx-auto max-w-[1500px] p-4 sm:p-6">
         <LeaderboardTable />
       </div>
     </div>

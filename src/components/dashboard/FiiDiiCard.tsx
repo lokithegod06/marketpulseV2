@@ -9,7 +9,8 @@ export function FiiDiiCard({ data }: { data: PreMarketData }) {
           {data.sources?.institutionalFlows ?? "Sample"} · Previous Close
         </span>
       </div>
-      <table className="w-full text-[11px] border-collapse">
+      <div className="w-full overflow-x-auto">
+      <table className="w-full min-w-[380px] border-collapse text-[11px]">
         <thead>
           <tr className="border-b border-border text-text-secondary uppercase text-[10px]">
             <th className="py-1.5 px-2 text-left"></th>
@@ -41,6 +42,7 @@ export function FiiDiiCard({ data }: { data: PreMarketData }) {
           </tr>
         </tbody>
       </table>
+      </div>
       <div className="mt-3 p-2.5 bg-surface-base rounded-lg border border-border">
         <div className="text-[10px] text-text-muted">Net Cash Inflow</div>
         <div className="text-base font-mono font-semibold text-accent-green mt-0.5">

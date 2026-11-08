@@ -113,7 +113,7 @@ export default function PortfolioPage() {
         }
       />
 
-      <div className="p-6 max-w-[1500px] mx-auto space-y-5">
+      <div className="mx-auto max-w-[1500px] space-y-5 p-4 sm:p-6">
         {error && (
           <div role="alert" className="rounded-lg border border-accent-red/30 bg-accent-red/10 p-3 text-xs text-accent-red">
             {error}

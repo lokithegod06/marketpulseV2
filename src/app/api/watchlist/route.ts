@@ -36,21 +36,39 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const symbol = String(body.symbol || "").toUpperCase().trim()
   if (!symbol) return NextResponse.json({ error: "Symbol required" }, { status: 400 })
+  if (!/^[A-Z0-9&.-]{1,30}$/.test(symbol)) {
+    return NextResponse.json({ error: "Enter a valid NSE stock symbol." }, { status: 400 })
+  }
 
-  const count = await db.watchlistItem.count({ where: { userId: user.id } })
-  if (count >= maxLimit) {
+  const existing = await db.watchlistItem.findUnique({
+    where: { userId_symbol: { userId: user.id, symbol } },
+  })
+  const count = existing ? 0 : await db.watchlistItem.count({ where: { userId: user.id } })
+  if (!existing && count >= maxLimit) {
     return NextResponse.json(
       { error: `Watchlist limit (${maxLimit} stocks) reached for ${user.plan} tier.` },
       { status: 403 }
     )
   }
-  const created = await db.watchlistItem.upsert({
-    where: { userId_symbol: { userId: user.id, symbol } },
-    update: {},
-    create: { userId: user.id, symbol, exchange: "NSE", sortOrder: count },
-  })
+
   const quotes = await fetchBatchQuotes([symbol])
-  return NextResponse.json({ item: quotes[symbol], dbRecord: created }, { status: 201 })
+  const quote = quotes[symbol]
+  if (quote?.source !== "Yahoo Finance") {
+    return NextResponse.json(
+      { error: `Could not verify ${symbol} with Yahoo Finance. Check the NSE symbol and try again.` },
+      { status: 422 }
+    )
+  }
+
+  const record =
+    existing ??
+    (await db.watchlistItem.create({
+      data: { userId: user.id, symbol, exchange: "NSE", sortOrder: count },
+    }))
+  return NextResponse.json(
+    { item: quote, dbRecord: record },
+    { status: existing ? 200 : 201 }
+  )
 }
 
 export async function DELETE(req: NextRequest) {
