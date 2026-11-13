@@ -49,6 +49,12 @@ export default function LandingPage() {
               <Link href="/discipline" className="hover:text-white transition-colors">
                 Discipline Score
               </Link>
+              <Link href="/algo-bots" className="hover:text-white transition-colors">
+                Algo Bots
+              </Link>
+              <Link href="/experts" className="hover:text-white transition-colors">
+                Experts
+              </Link>
               <a href="#pricing" className="hover:text-white transition-colors">
                 Pricing
               </a>
@@ -684,6 +690,10 @@ export default function LandingPage() {
                   <li className="flex items-center gap-2.5">
                     <Check className="w-4 h-4 text-[#34d399] shrink-0" />
                     <span>AI Post-Session Behavioral Feedback &amp; Drawdown Auditor</span>
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <Check className="w-4 h-4 text-[#34d399] shrink-0" />
+                    <span>Trade analysis sessions with real traders</span>
                   </li>
                 </ul>
               </div>
