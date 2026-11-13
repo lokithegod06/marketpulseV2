@@ -11,6 +11,8 @@ import {
   List,
   Trophy,
   GraduationCap,
+  Bot,
+  UsersRound,
   Settings,
 } from "lucide-react"
 
@@ -23,6 +25,8 @@ const NAV_ITEMS = [
   { href: "/watchlist", label: "Watchlist", icon: List, badge: "20", badgeType: "default" },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy, badge: "#14", badgeType: "blue" },
   { href: "/courses", label: "Courses", icon: GraduationCap, badge: "PRO", badgeType: "pro" },
+  { href: "/algo-bots", label: "Algo Bots", icon: Bot, badge: "", badgeType: "default" },
+  { href: "/experts", label: "Experts", icon: UsersRound, badge: "PRO", badgeType: "pro" },
   { href: "/settings", label: "Settings", icon: Settings, badge: "", badgeType: "default" },
 ]
 

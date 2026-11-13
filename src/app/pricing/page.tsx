@@ -100,6 +100,10 @@ export default function PricingPage() {
               <Check className="w-4 h-4 text-accent-green" />
               Full Access to All 6 Pro Strategy Courses &amp; 20-Stock Live Watchlist
             </li>
+            <li className="flex items-center gap-2.5 text-text-primary">
+              <Check className="w-4 h-4 text-accent-green" />
+              Connect with real traders for trade analysis through the Experts page
+            </li>
           </ul>
 
           <button

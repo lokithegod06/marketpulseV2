@@ -23,7 +23,9 @@ export function middleware(req: NextRequest) {
     pathname.startsWith("/portfolio") ||
     pathname.startsWith("/screeners") ||
     pathname.startsWith("/watchlist") ||
-    pathname.startsWith("/courses")
+    pathname.startsWith("/courses") ||
+    pathname.startsWith("/algo-bots") ||
+    pathname.startsWith("/experts")
 
   if (isProtected && !hasSession) {
     return NextResponse.redirect(new URL("/login", req.url))
