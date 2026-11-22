@@ -1,6 +1,14 @@
 {
   "crons": [
     {
+      "path": "/api/cron/market-picks-morning",
+      "schedule": "30 3 * * 1-5"
+    },
+    {
+      "path": "/api/cron/market-picks-evening",
+      "schedule": "30 12 * * 1-5"
+    },
+    {
       "path": "/api/cron/expire-subscriptions",
       "schedule": "0 0 * * *"
     }

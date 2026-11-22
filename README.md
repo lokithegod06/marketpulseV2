@@ -7,7 +7,7 @@ Market Pulse is a full-stack Next.js 14 (App Router) SaaS platform built for Ind
 1. **Pixel-Accurate First Page (`src/app/page.tsx`)**:
    - Built end-to-end from the reference landing page design (`screen.png`), featuring the sticky navigation bar, live NSE/BSE telemetry ticker, Hero section (*"Every pulse of the market. One high-frequency terminal."*), 3-panel Console preview (*Nifty 28 Mar Straddle*, *Discipline Score 94/100*, *FII/DII Activity*), 6-card *System Architecture* grid, *Eliminate the psychological leaks killing your P&L* guardrail showcase, *Transparent Pricing* (*Free Trader ₹0* vs *Pro Terminal ₹1,499/mo*), and SEBI regulatory footer.
 2. **All 8 Core Terminal Modules (`src/app/(dashboard)/*`)**:
-   - **Module 1 — Pre-Market Dashboard (`/dashboard`)**: Gift Nifty card with sparkline, Global Markets row (Dow Jones, S&P 500, Nikkei 225), deterministic rule-based Market Pulse Bias + intraday Nifty Spot pivots, India VIX percentile gauge, FII/DII cash & futures flows, Pre-Market Movers table, and AI-scored Institutional Wire.
+   - **Module 1 — Pre-Market Dashboard (`/dashboard`)**: Gift Nifty card with sparkline, Global Markets row (Dow Jones, S&P 500, Nikkei 225), deterministic rule-based Market Pulse Bias + intraday Nifty Spot pivots, India VIX percentile gauge, reported FII/DII cash flows, Pre-Market Movers table, and AI-scored Institutional Wire.
    - **Module 2 — Trade Journal (`/journal`)**: Real-time P&L and delta calculator, lot-size quick selectors, customizable 5-point discipline checklist, CSV export, and post-session AI coaching powered by Anthropic Claude (`claude-sonnet-4-6`).
    - **Module 3 — Discipline Score (`/discipline`)**: Persistent 0–100 daily scoring engine, behavioral diagnostics bars, automated hard guardrail adherence tracking, and public leaderboard integration.
    - **Module 4 — Portfolio Tracker (`/portfolio`)**: Holdings CRUD, live NSE price synchronization, P&L summary cards, and on-demand Claude AI Portfolio Review (Strong Positions, Underperformers, Concentration Risk).
@@ -15,6 +15,7 @@ Market Pulse is a full-stack Next.js 14 (App Router) SaaS platform built for Ind
    - **Module 6 — Watchlist (`/watchlist`)**: Live auto-refreshed quotes (10 stocks Free / 20 stocks Pro) with 1-click jump to log a trade in the Journal.
    - **Module 7 — Courses & Strategy Library (`/courses`)**: 6 structured tracks (*Beginner*, *Intermediate*, *Options Trading*, *Futures Trading*, *Psychology*, *Strategy Library*) gated behind Pro subscription.
    - **Module 8 — Trader Leaderboard (`/leaderboard`)**: Composite ranking (`60% Discipline Score + 40% 30-Day P&L Percentile`) with segment filters (*All India*, *F&O Only*, *Equity*, *Weekly*).
+   - **Appearance**: Switch between dark and light mode from the dashboard top bar; your preference is saved in this browser.
 3. **Complete Backend API Layer (`src/app/api/*`) & Database Schema (`prisma/schema.prisma`)**:
    - REST API route handlers with NextAuth v5 session checks, Zod validation, Prisma ORM queries, Upstash Redis caching/rate-limiting, shared sample market scans, and per-account saved trading data. Personal records require a working PostgreSQL connection.
 
@@ -98,18 +99,19 @@ Open `http://localhost:3000` to view the landing page. Sign in with Google or wi
      ```
 4. To enforce strict login redirects across all `/dashboard` routes in production, set `ENFORCE_AUTH="true"` in `.env.local`.
 
-### 3. AI Integration — Anthropic Claude API (`src/lib/claude.ts` & `src/lib/prompts.ts`)
+### 3. AI Integration — Groq (`src/lib/claude.ts` & `src/lib/prompts.ts`)
 
-Market Pulse uses Anthropic's `claude-sonnet-4-6` model for three specific features (Market Pulse Bias is strictly deterministic and rule-based in `src/lib/bias.ts`, never AI-generated):
+Market Pulse uses the configured Groq model for these features (Market Pulse Bias is strictly deterministic and rule-based in `src/lib/bias.ts`, never AI-generated):
 - **Trade Journal Coaching (`POST /api/journal/ai-feedback`)**: Analyzes the trader's last 30 trades and outputs JSON with `positivePattern`, `leakDetected`, and `recommendation`.
 - **Portfolio Fundamental Review (`POST /api/portfolio/ai-review`)**: Analyzes equity holdings and outputs `strongPositions`, `underperformers`, `concentrationRisk`, and `topAction`.
-- **News Relevance Scoring (`src/lib/rss.ts`)**: Scores RSS headlines from 0–10 and tags catalysts (`RBI`, `FII_FLOW`, `EARNINGS`, `CRUDE`, `GLOBAL`).
+- **News Relevance Scoring (`src/lib/rss.ts`)**: Scores RSS/social headlines from 0–10 and tags catalysts (`RBI`, `FII_FLOW`, `EARNINGS`, `CRUDE`, `GLOBAL`).
+- **Daily Hot Picks**: Produces morning and evening source-linked market-mover briefs from recent headlines.
 
 **How to connect:**
-1. Create an API key at [https://console.anthropic.com/](https://console.anthropic.com/).
+1. Create an API key at [https://console.groq.com/](https://console.groq.com/).
 2. Add it to `.env.local`:
    ```env
-   ANTHROPIC_API_KEY="sk-ant-api03-your-key-here"
+   GROQ_API_KEY="your-groq-api-key"
    ```
 3. All system prompts are centralized in `src/lib/prompts.ts`.
 
@@ -120,7 +122,16 @@ No paid API key is required for Phase 1 market data:
    - Automatically appends `.NS` for NSE equities (e.g., `RELIANCE.NS`, `HDFCBANK.NS`) and queries `https://query1.finance.yahoo.com/v8/finance/chart/{symbol}` for live LTP, 52-week high/low, and volume, as well as `^NSEI` (Nifty 50), `^NSEBANK` (BankNifty), `^DJI` (Dow Jones), `^GSPC` (S&P 500), and `^N225` (Nikkei 225).
 2. **NSE India Session Cookie Handshake (`src/lib/nse.ts`)**:
    - NSE India's official JSON endpoints (`/api/allIndices`, `/api/reports?archives=[{"name":"FII_DII"}]`, `/api/option-chain-equities?symbol=NIFTY`, `/api/live-analysis-pre-open?key=NIFTY_50`) return `403 Forbidden` if called without a valid browser session cookie.
-   - `fetchNSE(path)` in `src/lib/nse.ts` first sends a request to `https://www.nseindia.com` with realistic browser `User-Agent` and `Accept` headers, caches the `set-cookie` header in Redis under `"nse:cookie"` for 30 minutes, and attaches `Cookie` and `Referer: https://www.nseindia.com/` on subsequent API calls.
+   - `fetchNSE(path)` in `src/lib/nse.ts` first sends a request to `https://www.nseindia.com` with browser `User-Agent` and `Accept` headers, caches the cookie pairs in Redis under `"nse:cookie"` for 30 minutes, and attaches `Cookie` and `Referer: https://www.nseindia.com/` on subsequent API calls.
+   - `getFiiDiiCashFlows()` reads daily net FII/FPI and DII cash values from `/api/fiidiiTradeReact`, caches them briefly, and displays the NSE report date. Futures positioning is not included; if NSE blocks the request or returns incomplete data, the dashboard shows unavailable instead of sample figures.
+3. **GIFT Nifty 50 futures**:
+   - The dashboard fetches the `NSEIX:NIFTY1!` continuous futures quote from TradingView's India scanner, including its change versus the previous close. This quote continues to update during the GIFT Nifty extended session after the NSE cash-market close. If the provider has no quote, the dashboard clearly shows it as unavailable instead of substituting Nifty spot.
+
+### Daily Market-Mover Briefs
+
+- The dashboard aggregates recent headlines from Moneycontrol, Economic Times, Mint, and Business Standard/Financial Express RSS feeds. If `X_BEARER_TOKEN` is configured with X API recent-search access, matching X posts are also considered and labeled as unverified social leads.
+- Groq AI selects source-linked morning picks at **9:00 AM IST** and evening picks at **6:00 PM IST** on weekdays. Both briefs are cached once per IST day; X/API access and `GROQ_API_KEY` are required for AI-generated picks.
+- Set `CRON_SECRET` in the deployment and `.env.local`; Vercel calls the scheduled endpoints with this bearer token. Schedules are UTC in `vercel.json` (03:30 and 12:30 UTC).
 
 ### 5. Custom ChartInk Screeners (`src/lib/chartink.ts`)
 
@@ -175,9 +186,9 @@ ChartInk does not provide an official public API, so `runChartinkScan()` in `src
 
 ### 8. Email (Resend), Media (Cloudinary) & Vercel Cron Jobs (`vercel.json`)
 
-- **Resend**: Create an API key at [https://resend.com](https://resend.com) and set `RESEND_API_KEY` and `EMAIL_FROM="noreply@marketpulse.in"`.
+- **Resend**: Create an API key at [https://resend.com](https://resend.com) and set `RESEND_API_KEY` and `EMAIL_FROM="noreply@marketpulse.in"`. A welcome/onboarding email is sent automatically after account registration. For production, verify your sending domain in Resend and use a sender address on that domain.
 - **Cloudinary**: Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` for course cover images and avatars.
-- **Vercel Cron Jobs**: `vercel.json` defines 4 automated cron jobs (`/api/cron/refresh-news` every 15m, `/api/cron/end-of-day` at 3:00 PM IST weekdays, `/api/cron/fii-dii` at 6:30 PM IST weekdays, and `/api/cron/expire-subscriptions` at midnight daily). Protect them by setting `CRON_SECRET` in `.env.local`.
+- **Vercel Cron Jobs**: `vercel.json` schedules weekday morning/evening market-mover briefs and daily subscription expiry. Protect scheduled endpoints by setting `CRON_SECRET` in `.env.local` and Vercel.
 
 ## API Routes Summary
 
@@ -188,7 +199,8 @@ ChartInk does not provide an official public API, so `runChartinkScan()` in `src
 | `/api/dashboard/pre-market` | `GET` | Required | Gift Nifty, global indices, India VIX, movers + Market Pulse Bias |
 | `/api/dashboard/bias` | `GET` | Pro | Deterministic rule-based Market Pulse Bias + Nifty pivots |
 | `/api/dashboard/news` | `GET` | Required | RSS dispatches scored by Claude (3 Free / Full Pro) |
-| `/api/dashboard/fii-dii` | `GET` | Pro | FII & DII cash and futures participant flows |
+| `/api/dashboard/market-picks` | `GET` | Required | Today's morning and evening AI market-mover briefs |
+| `/api/dashboard/fii-dii` | `GET` | Pro | NSE-reported daily FII & DII net cash flows |
 | `/api/journal` | `GET / POST` | Required | List trades or log a new trade (computes P&L + updates Discipline Score) |
 | `/api/journal/[id]` | `GET / PUT / DELETE` | Required | Fetch, update post-trade exit/notes, or delete a trade |
 | `/api/journal/ai-feedback` | `POST` | Pro | Claude `claude-sonnet-4-6` behavioral audit on last 30 trades |

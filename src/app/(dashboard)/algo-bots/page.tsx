@@ -38,7 +38,7 @@ export default function AlgoBotsPage() {
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <a
                 href={mailto}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-blue px-5 py-3 text-xs font-semibold text-[#051321] transition-colors hover:bg-[#bae6fd]"
+                className="inline-flex items-center gap-2 rounded-lg bg-accent-blue px-5 py-3 text-xs font-semibold text-accent-contrast transition-colors hover:brightness-110"
               >
                 Discuss your bot
                 <ArrowRight className="h-4 w-4" />

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { PageHeader } from "@/components/shared/PageHeader"
 
 export default function SettingsPage() {
@@ -8,12 +8,52 @@ export default function SettingsPage() {
   const [leaderboardOpt, setLeaderboardOpt] = useState(true)
   const [maxTrades, setMaxTrades] = useState("3")
   const [maxLoss, setMaxLoss] = useState("5000")
+  const [tradingStart, setTradingStart] = useState("09:15")
+  const [tradingEnd, setTradingEnd] = useState("15:15")
+  const [minRiskReward, setMinRiskReward] = useState("1")
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetch("/api/settings")
+      .then(async (res) => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || "Failed to load settings.")
+        setHandle(data.handle || "")
+        setLeaderboardOpt(data.leaderboardOpt)
+        setMaxTrades(String(data.maxTrades))
+        setMaxLoss(String(data.maxLoss))
+        setTradingStart(data.tradingStart)
+        setTradingEnd(data.tradingEnd)
+        setMinRiskReward(String(data.minRiskReward))
+      })
+      .catch((err: Error) => setError(err.message))
+  }, [])
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+    setError("")
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          handle,
+          leaderboardOpt,
+          maxTrades: Number(maxTrades),
+          maxLoss: Number(maxLoss),
+          tradingStart,
+          tradingEnd,
+          minRiskReward: Number(minRiskReward),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to save settings.")
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save settings.")
+    }
   }
 
   return (
@@ -24,6 +64,11 @@ export default function SettingsPage() {
       />
       <div className="mx-auto max-w-3xl p-4 sm:p-6">
         <form onSubmit={handleSave} className="space-y-5 rounded-xl border border-border bg-surface-low p-4 sm:p-6">
+          {error && (
+            <div role="alert" className="rounded-lg border border-accent-red/30 bg-accent-red/10 p-3 text-xs text-accent-red">
+              {error}
+            </div>
+          )}
           <div>
             <label className="block text-xs text-text-secondary mb-1">Public Leaderboard Handle</label>
             <input
@@ -49,8 +94,42 @@ export default function SettingsPage() {
               <label className="block text-xs text-text-secondary mb-1">Hard Daily Stop Loss (₹)</label>
               <input
                 type="number"
+                min="1"
+                step="any"
                 value={maxLoss}
                 onChange={(e) => setMaxLoss(e.target.value)}
+                className="w-full bg-surface-base border border-border rounded-lg px-3.5 py-2 text-xs font-mono text-text-primary"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs text-text-secondary mb-1">Trading Start Time</label>
+              <input
+                type="time"
+                value={tradingStart}
+                onChange={(e) => setTradingStart(e.target.value)}
+                className="w-full bg-surface-base border border-border rounded-lg px-3.5 py-2 text-xs text-text-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-text-secondary mb-1">Trading End Time</label>
+              <input
+                type="time"
+                value={tradingEnd}
+                onChange={(e) => setTradingEnd(e.target.value)}
+                className="w-full bg-surface-base border border-border rounded-lg px-3.5 py-2 text-xs text-text-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-text-secondary mb-1">Minimum Risk : Reward</label>
+              <input
+                type="number"
+                min="0.1"
+                step="any"
+                value={minRiskReward}
+                onChange={(e) => setMinRiskReward(e.target.value)}
                 className="w-full bg-surface-base border border-border rounded-lg px-3.5 py-2 text-xs font-mono text-text-primary"
               />
             </div>
@@ -75,7 +154,7 @@ export default function SettingsPage() {
             </span>
             <button
               type="submit"
-              className="bg-accent-blue text-[#001e2f] font-semibold text-xs px-5 py-2 rounded-lg hover:bg-[#bae6fd]"
+              className="bg-accent-blue text-accent-contrast font-semibold text-xs px-5 py-2 rounded-lg hover:brightness-110"
             >
               Save Configuration
             </button>

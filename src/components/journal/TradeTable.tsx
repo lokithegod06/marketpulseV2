@@ -42,7 +42,7 @@ export function TradeTable({ trades }: { trades: TradeRecord[] }) {
       </div>
 
       <div className="w-full overflow-x-auto">
-      <table className="w-full min-w-[640px] border-collapse text-left">
+      <table className="w-full min-w-[820px] border-collapse text-left">
         <thead>
           <tr className="border-b border-border text-[10px] text-text-secondary uppercase">
             <th className="py-2 px-2">Time</th>
@@ -51,6 +51,7 @@ export function TradeTable({ trades }: { trades: TradeRecord[] }) {
             <th className="py-2 px-2">Qty</th>
             <th className="py-2 px-2">Entry</th>
             <th className="py-2 px-2">P&L</th>
+            <th className="py-2 px-2">Notes & Thesis</th>
           </tr>
         </thead>
         <tbody className="text-xs">
@@ -60,7 +61,7 @@ export function TradeTable({ trades }: { trades: TradeRecord[] }) {
             return (
               <tr key={t.id} className="border-b border-border/50 hover:bg-surface-high/40">
                 <td className="py-3 px-2 font-mono text-[11px] text-text-secondary">
-                  {t.time || "09:22 AM"}
+                  {t.time || "Not set"}
                 </td>
                 <td className="py-3 px-2">
                   <span className={`font-semibold text-[11px] ${isWin ? "text-accent-green" : "text-accent-red"}`}>
@@ -73,12 +74,15 @@ export function TradeTable({ trades }: { trades: TradeRecord[] }) {
                 <td className={`py-3 px-2 font-mono font-medium ${isWin ? "text-accent-green" : "text-accent-red"}`}>
                   {isWin ? "+" : "−"}₹{Math.abs(pnlVal).toLocaleString("en-IN")}
                 </td>
+                <td className="max-w-[220px] py-3 px-2 text-[11px] text-text-secondary">
+                  {t.notes || "—"}
+                </td>
               </tr>
             )
           })}
           {filtered.length === 0 && (
             <tr>
-              <td colSpan={6} className="py-8 text-center text-xs text-text-muted">
+              <td colSpan={7} className="py-8 text-center text-xs text-text-muted">
                 No trades yet. Log your first trade to start your journal.
               </td>
             </tr>

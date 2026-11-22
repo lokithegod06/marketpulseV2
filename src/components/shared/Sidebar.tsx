@@ -67,7 +67,7 @@ export function Sidebar({
       <aside
         id="dashboard-navigation"
         aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-[min(84vw,280px)] flex-col select-none border-r border-border bg-[#080b13]/[0.98] backdrop-blur-md transition-transform duration-200 lg:static lg:z-auto lg:h-dvh lg:w-[220px] lg:min-w-[220px] lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-[min(84vw,280px)] flex-col select-none border-r border-border bg-surface-base/[0.98] backdrop-blur-md transition-transform duration-200 lg:static lg:z-auto lg:h-dvh lg:w-[220px] lg:min-w-[220px] lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >

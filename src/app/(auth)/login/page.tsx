@@ -35,8 +35,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-base flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-surface-low border border-border rounded-2xl p-8 shadow-2xl">
+    <div className="min-h-screen bg-surface-base flex items-center justify-center p-3 sm:p-6">
+      <div className="w-full max-w-md bg-surface-low border border-border rounded-2xl p-5 sm:p-8 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <Link href="/" className="flex items-center gap-2">
             <svg width="28" height="20" viewBox="0 0 100 40" fill="none">
@@ -85,7 +85,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-accent-blue text-[#001e2f] font-semibold text-xs hover:bg-[#bae6fd] transition-colors"
+            className="w-full py-2.5 rounded-lg bg-accent-blue text-accent-contrast font-semibold text-xs hover:brightness-110 transition-colors"
           >
             {loading ? "Authenticating…" : "Launch Terminal"}
           </button>

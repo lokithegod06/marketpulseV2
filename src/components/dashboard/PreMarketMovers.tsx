@@ -51,7 +51,7 @@ export function PreMarketMovers({ movers }: { movers: PreMarketMover[] }) {
               <td className="py-3 px-2 text-right">
                 <button
                   onClick={() => handleBuyLimit(m.symbol)}
-                  className="bg-accent-blue text-[#001e2f] font-semibold text-[10px] px-2.5 py-1 rounded hover:bg-[#bae6fd] transition-colors"
+                  className="bg-accent-blue text-accent-contrast font-semibold text-[10px] px-2.5 py-1 rounded hover:brightness-110 transition-colors"
                 >
                   Buy Lmt
                 </button>

@@ -13,6 +13,65 @@ export interface QuoteItem {
   source?: "Yahoo Finance" | "Sample"
 }
 
+export type GiftNiftyQuote = {
+  price: number
+  changePoints: number
+  changePct: number
+  previousClose: number
+  high: number
+  low: number
+  updatedAt: string
+  source: "TradingView"
+}
+
+export async function fetchGiftNiftyQuote(): Promise<GiftNiftyQuote | null> {
+  const cacheKey = "prices:gift-nifty"
+  const cached = await cacheGet<GiftNiftyQuote>(cacheKey)
+  if (cached) return cached
+
+  const response = await fetch("https://scanner.tradingview.com/india/scan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      symbols: { tickers: ["NSEIX:NIFTY1!"], query: { types: [] } },
+      columns: ["close", "change", "change_abs", "high", "low"],
+    }),
+    signal: AbortSignal.timeout(6000),
+    cache: "no-store",
+  })
+  if (!response.ok) {
+    throw new Error(`GIFT Nifty quote provider returned ${response.status}`)
+  }
+
+  const payload = (await response.json()) as {
+    data?: { d?: (number | null)[] }[]
+  }
+  const values = payload.data?.[0]?.d
+  const [price, changePct, changePoints, high, low] = values || []
+  if (
+    !Number.isFinite(price) ||
+    !Number.isFinite(changePct) ||
+    !Number.isFinite(changePoints) ||
+    !Number.isFinite(high) ||
+    !Number.isFinite(low)
+  ) {
+    return null
+  }
+
+  const quote: GiftNiftyQuote = {
+    price: Number(price),
+    changePoints: Number(changePoints),
+    changePct: Number(changePct),
+    previousClose: Number(price) - Number(changePoints),
+    high: Number(high),
+    low: Number(low),
+    updatedAt: new Date().toISOString(),
+    source: "TradingView",
+  }
+  await cacheSet(cacheKey, quote, 60)
+  return quote
+}
+
 const DEFAULT_QUOTES: Record<string, QuoteItem> = {
   "NIFTY 50": { symbol: "NIFTY 50", sector: "Index", ltp: 24312.15, change: 102.0, changePct: 0.42, high52w: 24853, low52w: 18837, volume: "—" },
   "BANKNIFTY": { symbol: "BANKNIFTY", sector: "Index", ltp: 51348.8, change: 440.0, changePct: 0.86, high52w: 54467, low52w: 39350, volume: "—" },
@@ -44,6 +103,7 @@ export async function fetchYahooQuote(symbol: string): Promise<QuoteItem> {
       `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooTicker)}?interval=1d&range=5d`,
       {
         headers: { "User-Agent": "Mozilla/5.0" },
+        signal: AbortSignal.timeout(6000),
         next: { revalidate: 60 },
       }
     )
@@ -99,7 +159,11 @@ export async function fetchYahooTickerQuote(
   try {
     const res = await fetch(
       `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=5d`,
-      { headers: { "User-Agent": "Mozilla/5.0" }, next: { revalidate: 60 } }
+      {
+        headers: { "User-Agent": "Mozilla/5.0" },
+        signal: AbortSignal.timeout(6000),
+        next: { revalidate: 60 },
+      }
     )
     if (!res.ok) return null
     const result = (await res.json())?.chart?.result?.[0]

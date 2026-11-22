@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { getPreMarketTelemetry } from "@/lib/nse"
 import { calculateBias } from "@/lib/bias"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   try {
     const data = await getPreMarketTelemetry()

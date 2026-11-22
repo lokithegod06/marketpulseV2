@@ -48,19 +48,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        if (isDatabaseConfigured() && user.id) {
-          try {
-            const sub = await db.subscription.findUnique({
-              where: { userId: user.id },
-            })
-            token.plan = sub?.plan ?? "FREE"
-          } catch {
-            token.plan = "FREE"
-          }
-        } else {
-          token.plan = (user as { plan?: string }).plan ?? "FREE"
-        }
       }
+
+      if (isDatabaseConfigured() && token.id) {
+        try {
+          const sub = await db.subscription.findUnique({
+            where: { userId: String(token.id) },
+          })
+          token.plan = sub?.plan ?? "FREE"
+        } catch (error) {
+          console.error("Failed to refresh subscription plan:", error)
+          token.plan = token.plan ?? "FREE"
+        }
+      } else if (user) {
+        token.plan = (user as { plan?: string }).plan ?? "FREE"
+      }
+
       return token
     },
     async session({ session, token }) {

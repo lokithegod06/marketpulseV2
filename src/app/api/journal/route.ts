@@ -12,6 +12,7 @@ const TradeSchema = z.object({
   quantity: z.number().int().positive(),
   lots: z.number().int().positive().optional(),
   strategyTag: z.string().optional(),
+  tradeTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
   disciplineChecks: z.array(
     z.object({
       label: z.string(),
@@ -123,7 +124,24 @@ export async function GET(req: NextRequest) {
       skip: offset,
     })
 
-    return NextResponse.json({ trades })
+    const formattedTrades = trades.map((trade) => {
+      const date = new Date(trade.date)
+      let time = trade.tradeTime
+      if (!time) {
+        time = date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        })
+      } else {
+        const [hours, minutes] = time.split(":").map(Number)
+        const suffix = hours >= 12 ? "PM" : "AM"
+        time = `${String(hours % 12 || 12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${suffix}`
+      }
+      return { ...trade, time }
+    })
+
+    return NextResponse.json({ trades: formattedTrades })
   } catch (err) {
     const status = err instanceof Error && err.message === "UNAUTHORIZED" ? 401 : 500
     return NextResponse.json({ error: "Failed to fetch trades", detail: String(err) }, { status })
@@ -145,6 +163,13 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data
 
+    let tradeDate = new Date()
+    if (data.tradeTime) {
+      const [hours, minutes] = data.tradeTime.split(":").map(Number)
+      tradeDate = new Date()
+      tradeDate.setHours(hours, minutes, 0, 0)
+    }
+
     // Compute P&L if exit price provided
     const pnl = data.exitPrice
       ? data.direction === "BUY"
@@ -155,6 +180,8 @@ export async function POST(req: NextRequest) {
     const trade = await db.trade.create({
       data: {
         userId: user.id,
+        date: tradeDate,
+        tradeTime: data.tradeTime,
         symbol: data.symbol,
         direction: data.direction,
         entryPrice: data.entryPrice,

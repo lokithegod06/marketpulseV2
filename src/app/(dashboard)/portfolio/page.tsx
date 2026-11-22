@@ -105,7 +105,7 @@ export default function PortfolioPage() {
               type="button"
               onClick={handleRunAiReview}
               disabled={loadingAi}
-              className="bg-accent-blue text-[#001e2f] font-semibold text-xs px-4 py-2 rounded-lg hover:bg-[#bae6fd]"
+              className="bg-accent-blue text-accent-contrast font-semibold text-xs px-4 py-2 rounded-lg hover:brightness-110"
             >
               {loadingAi ? "Running Claude Review…" : "✦ AI Portfolio Review"}
             </button>
@@ -152,6 +152,7 @@ export default function PortfolioPage() {
                 type="number"
                 required
                 min="0.01"
+                step="any"
                 value={newBuy}
                 onChange={(e) => setNewBuy(e.target.value)}
                 className="bg-surface-base border border-border rounded-lg px-3 py-1.5 text-xs font-mono text-text-primary w-32"
@@ -159,7 +160,7 @@ export default function PortfolioPage() {
             </div>
             <button
               type="submit"
-              className="bg-accent-blue text-[#001e2f] font-semibold text-xs px-4 py-2 rounded-lg"
+              className="bg-accent-blue text-accent-contrast font-semibold text-xs px-4 py-2 rounded-lg"
             >
               Save Holding
             </button>

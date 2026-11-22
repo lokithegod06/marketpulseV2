@@ -82,7 +82,7 @@ export default function PricingPage() {
             </li>
             <li className="flex items-center gap-2.5 text-text-primary">
               <Check className="w-4 h-4 text-accent-green" />
-              Unlimited Trade Journal + Claude Sonnet 4.6 Post-Session Behavioral Audit
+              Unlimited Trade Journal + AI Post-Session Behavioral Audit
             </li>
             <li className="flex items-center gap-2.5 text-text-primary">
               <Check className="w-4 h-4 text-accent-green" />
@@ -109,7 +109,7 @@ export default function PricingPage() {
           <button
             type="button"
             onClick={handleSubscribe}
-            className="w-full py-3 rounded-lg bg-accent-blue text-[#001e2f] font-semibold text-xs hover:bg-[#bae6fd] transition-colors"
+            className="w-full py-3 rounded-lg bg-accent-blue text-accent-contrast font-semibold text-xs hover:brightness-110 transition-colors"
           >
             Proceed to Razorpay Checkout
           </button>

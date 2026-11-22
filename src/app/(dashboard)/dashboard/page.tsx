@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { PreMarketCard } from "@/components/dashboard/PreMarketCard"
+import { GiftNiftyCard } from "@/components/dashboard/GiftNiftyCard"
 import { GlobalMarketsRow } from "@/components/dashboard/GlobalMarketsRow"
 import { BiasCard } from "@/components/dashboard/BiasCard"
 import { VixCard } from "@/components/dashboard/VixCard"
 import { FiiDiiCard } from "@/components/dashboard/FiiDiiCard"
 import { PreMarketMovers } from "@/components/dashboard/PreMarketMovers"
 import { NewsWire } from "@/components/dashboard/NewsWire"
+import { MarketHotPicks } from "@/components/dashboard/MarketHotPicks"
 import { BiasResult, NewsItem, PreMarketData } from "@/types"
 
 export default function PreMarketDashboardPage() {
@@ -59,8 +61,10 @@ export default function PreMarketDashboardPage() {
         )}
         {data && (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <MarketHotPicks />
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
               <PreMarketCard data={data} />
+              <GiftNiftyCard data={data} />
               <GlobalMarketsRow data={data} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

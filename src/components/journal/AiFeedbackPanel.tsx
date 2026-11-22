@@ -4,10 +4,12 @@ export function AiFeedbackPanel({
   feedback,
   onRefresh,
   loading,
+  error,
 }: {
-  feedback: JournalAiFeedback
+  feedback: JournalAiFeedback | null
   onRefresh?: () => void
   loading?: boolean
+  error?: string
 }) {
   return (
     <div className="bg-surface-low border border-border rounded-xl p-5">
@@ -15,7 +17,7 @@ export function AiFeedbackPanel({
         <div>
           <h3 className="text-[13px] font-semibold text-text-primary">Execution & Behavioral Intelligence</h3>
           <p className="text-[11px] text-text-muted mt-0.5">
-            Quantitative audit across intraday positions · Claude Sonnet 4.6
+            AI analysis of your saved trades, discipline checks, and notes
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -35,6 +37,17 @@ export function AiFeedbackPanel({
         </div>
       </div>
 
+      {error && (
+        <p role="alert" className="mb-4 rounded-lg border border-accent-red/30 bg-accent-red/10 p-3 text-xs text-accent-red">
+          {error}
+        </p>
+      )}
+      {!feedback && (
+        <p className="text-xs text-text-secondary">
+          Analyze your saved trades, notes, and discipline checks for patterns and actionable coaching.
+        </p>
+      )}
+      {feedback && (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="bg-surface-mid/80 border border-accent-green/20 rounded-xl p-4">
           <div className="text-[9px] font-bold tracking-wider text-accent-green uppercase mb-1.5">
@@ -69,6 +82,7 @@ export function AiFeedbackPanel({
           </div>
         </div>
       </div>
+      )}
     </div>
   )
 }

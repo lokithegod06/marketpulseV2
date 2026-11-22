@@ -7,6 +7,7 @@ import { TradeTable } from "@/components/journal/TradeTable"
 import { AiFeedbackPanel } from "@/components/journal/AiFeedbackPanel"
 import { JournalAiFeedback, TradeRecord } from "@/types"
 import { useWatchlistStore } from "@/store/watchlistStore"
+import { useSession } from "next-auth/react"
 
 const INITIAL_TRADES: TradeRecord[] = [
   {
@@ -93,9 +94,11 @@ const INITIAL_FEEDBACK: JournalAiFeedback = {
 
 export default function TradeJournalPage() {
   const { prefillJournalSymbol } = useWatchlistStore()
+  const { data: session } = useSession()
   const [trades, setTrades] = useState<TradeRecord[]>([])
   const [feedback, setFeedback] = useState<JournalAiFeedback | null>(null)
   const [loadingAi, setLoadingAi] = useState(false)
+  const [aiError, setAiError] = useState("")
   const [error, setError] = useState("")
 
   useEffect(() => {
@@ -118,13 +121,14 @@ export default function TradeJournalPage() {
 
   const handleRefreshAi = async () => {
     setLoadingAi(true)
+    setAiError("")
     try {
       const res = await fetch("/api/journal/ai-feedback", { method: "POST" })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to load trade coaching.")
       if (data.feedback) setFeedback(data.feedback)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load trade coaching.")
+      setAiError(err instanceof Error ? err.message : "Failed to load trade coaching.")
     } finally {
       setLoadingAi(false)
     }
@@ -187,8 +191,13 @@ export default function TradeJournalPage() {
         </div>
         <div className="lg:col-span-7 space-y-5">
           <TradeTable trades={trades} />
-          {feedback && (
-            <AiFeedbackPanel feedback={feedback} onRefresh={handleRefreshAi} loading={loadingAi} />
+          {(session?.user as { plan?: string } | undefined)?.plan === "PRO" && (
+            <AiFeedbackPanel
+              feedback={feedback}
+              onRefresh={handleRefreshAi}
+              loading={loadingAi}
+              error={aiError}
+            />
           )}
         </div>
       </div>

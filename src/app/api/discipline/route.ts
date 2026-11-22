@@ -82,7 +82,9 @@ export async function GET() {
         disciplineChecks: Array.isArray(trade.disciplineChecks)
           ? (trade.disciplineChecks as { label: string; checked: boolean }[])
           : [],
-      }))
+      })),
+      Number((rules.find((rule) => rule.ruleType === "MAX_TRADES_PER_DAY")?.value as { maxTrades?: number })?.maxTrades || 3),
+      Number((rules.find((rule) => rule.ruleType === "HARD_STOP_LOSS")?.value as { maxLoss?: number })?.maxLoss || 5000)
     )
     const currentScore =
       trades.length === 0

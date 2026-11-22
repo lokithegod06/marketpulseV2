@@ -53,7 +53,7 @@ export default function DisciplinePage() {
             </p>
             <Link
               href="/journal"
-              className="mt-5 inline-flex rounded-lg bg-accent-blue px-4 py-2 text-xs font-semibold text-[#001e2f]"
+              className="mt-5 inline-flex rounded-lg bg-accent-blue px-4 py-2 text-xs font-semibold text-accent-contrast"
             >
               Open Trade Journal
             </Link>
@@ -82,22 +82,24 @@ export default function DisciplinePage() {
                 <div className="mt-1 text-xs text-text-secondary">Calculated from your trade checklists</div>
               </div>
             </section>
-            <section className="rounded-xl border border-border bg-surface-low p-5">
-              <h2 className="text-sm font-semibold text-text-primary">Your active discipline rules</h2>
-              {data.rules.length === 0 ? (
-                <p className="mt-3 text-xs text-text-muted">You have not added any personal discipline rules yet.</p>
-              ) : (
-                <ul className="mt-3 divide-y divide-border/50">
-                  {data.rules.map((rule) => (
-                    <li key={rule.id} className="py-3">
-                      <div className="text-xs font-medium text-text-primary">{rule.label}</div>
-                      {rule.description && <p className="mt-1 text-[11px] text-text-secondary">{rule.description}</p>}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
           </>
+        )}
+        {data && (
+          <section className="rounded-xl border border-border bg-surface-low p-5">
+            <h2 className="text-sm font-semibold text-text-primary">Your active discipline rules</h2>
+            {data.rules.length === 0 ? (
+              <p className="mt-3 text-xs text-text-muted">You have not added any personal discipline rules yet.</p>
+            ) : (
+              <ul className="mt-3 divide-y divide-border/50">
+                {data.rules.map((rule) => (
+                  <li key={rule.id} className="py-3">
+                    <div className="text-xs font-medium text-text-primary">{rule.label}</div>
+                    {rule.description && <p className="mt-1 text-[11px] text-text-secondary">{rule.description}</p>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         )}
       </div>
     </div>

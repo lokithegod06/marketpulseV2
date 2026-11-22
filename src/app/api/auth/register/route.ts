@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs"
 import { z } from "zod"
 import { db, isDatabaseConfigured } from "@/lib/db"
 import { PERSONAL_DATA_DATABASE_ERROR } from "@/lib/utils"
+import { sendOnboardingEmail } from "@/lib/email"
 
 const RegisterSchema = z.object({
   name: z.string().min(2),
@@ -44,8 +45,19 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    let welcomeEmailSent = false
+    try {
+      await sendOnboardingEmail({ name: user.name || parsed.data.name, email: user.email })
+      welcomeEmailSent = true
+    } catch (emailError) {
+      console.error("Onboarding email failed:", emailError)
+    }
+
     return NextResponse.json(
-      { user: { id: user.id, name: user.name, email: user.email, handle: user.handle } },
+      {
+        user: { id: user.id, name: user.name, email: user.email, handle: user.handle },
+        welcomeEmailSent,
+      },
       { status: 201 }
     )
   } catch (err) {
