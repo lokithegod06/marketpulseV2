@@ -40,7 +40,7 @@ export function ScreenerCard({
         onClick={onRun}
         className={`mt-4 w-full rounded-lg py-2 text-xs font-semibold transition-colors ${
           isPro
-            ? "bg-accent-blue text-[#001e2f] hover:bg-[#bae6fd]"
+            ? "bg-accent-blue text-accent-contrast hover:brightness-110"
             : "bg-surface-mid text-text-primary border border-border hover:border-accent-blue/40"
         }`}
       >

@@ -44,7 +44,7 @@ export default function CoursesPage() {
             </div>
             <Link
               href={`/courses/${c.slug}`}
-              className="block w-full py-2 rounded-lg bg-accent-blue text-[#001e2f] font-semibold text-xs text-center hover:bg-[#bae6fd] transition-colors"
+              className="block w-full py-2 rounded-lg bg-accent-blue text-accent-contrast font-semibold text-xs text-center hover:brightness-110 transition-colors"
             >
               {c.category === "STRATEGY" ? "View Library" : "Start Course"}
             </Link>

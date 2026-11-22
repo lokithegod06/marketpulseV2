@@ -22,6 +22,23 @@ const FALLBACK_PORTFOLIO_REVIEW: PortfolioAiReview = {
   topAction: "Review IT allocation concentration (38% weight) and set a trailing stop on TATASTEEL gains.",
 }
 
+function parsePortfolioReview(rawResponse: string): PortfolioAiReview {
+  const jsonMatch = rawResponse.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error("AI returned no JSON review")
+  const parsed = JSON.parse(jsonMatch[0]) as Partial<PortfolioAiReview>
+
+  if (
+    !parsed.strongPositions ||
+    !parsed.underperformers ||
+    !parsed.concentrationRisk ||
+    typeof parsed.topAction !== "string"
+  ) {
+    throw new Error("AI returned an invalid portfolio review")
+  }
+
+  return parsed as PortfolioAiReview
+}
+
 export async function POST(req: NextRequest) {
   try {
     const user = await requirePro()
@@ -40,7 +57,7 @@ export async function POST(req: NextRequest) {
     const holdings = body.holdings || []
 
     if (!isClaudeConfigured()) {
-      return NextResponse.json({ error: "Configure ANTHROPIC_API_KEY to enable portfolio reviews." }, { status: 503 })
+      return NextResponse.json({ error: "Configure GROQ_API_KEY to enable portfolio reviews." }, { status: 503 })
     }
     if (!Array.isArray(holdings) || holdings.length === 0) {
       return NextResponse.json({ error: "Add portfolio holdings before requesting a review." }, { status: 400 })
@@ -63,8 +80,16 @@ ${holdings
 Total portfolio value: ₹${totalValue}
 Please identify patterns, risks, and notable observations.`
 
-    const rawResponse = await callClaude(PORTFOLIO_REVIEW_SYSTEM, userMsg)
-    const review = JSON.parse(rawResponse) as PortfolioAiReview
+    let review: PortfolioAiReview
+    let aiAvailable = true
+    try {
+      const rawResponse = await callClaude(PORTFOLIO_REVIEW_SYSTEM, userMsg)
+      review = parsePortfolioReview(rawResponse)
+    } catch (error) {
+      aiAvailable = false
+      console.error("Portfolio AI provider failed:", error)
+      review = FALLBACK_PORTFOLIO_REVIEW
+    }
 
     if (isDatabaseConfigured()) {
       await db.aiFeedback.create({
@@ -78,10 +103,19 @@ Please identify patterns, risks, and notable observations.`
 
     return NextResponse.json({
       review,
-      disclaimer: "Note: Portfolio AI review is a mock fundamental analysis based on Claude's knowledge, NOT real-time financial data.",
+      aiAvailable,
+      disclaimer: aiAvailable
+        ? "AI observations are based on the submitted holdings and provider knowledge, NOT real-time financial data."
+        : "The AI provider is unavailable; a general fallback review is shown instead.",
     })
   } catch (error) {
-    const status = error instanceof Error && error.message === "UNAUTHORIZED" ? 401 : 500
-    return NextResponse.json({ error: "Failed to generate portfolio review." }, { status })
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "Please sign in to request an AI portfolio review." }, { status: 401 })
+    }
+    if (error instanceof Error && error.message === "UPGRADE_REQUIRED") {
+      return NextResponse.json({ error: "An active Pro subscription is required for AI portfolio reviews." }, { status: 402 })
+    }
+    console.error("Portfolio AI route failed:", error)
+    return NextResponse.json({ error: "Failed to prepare portfolio review." }, { status: 500 })
   }
 }

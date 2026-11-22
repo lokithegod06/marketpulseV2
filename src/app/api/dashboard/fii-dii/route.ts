@@ -8,11 +8,10 @@ export async function GET() {
     const data = await getPreMarketTelemetry()
     return NextResponse.json({
       fiiCash: data.fiiCash,
-      fiiFutures: data.fiiFutures,
       diiCash: data.diiCash,
-      diiFutures: data.diiFutures,
       netCashInflow: data.netCashInflow,
-      updatedAt: "18:30 IST",
+      date: data.institutionalFlowsDate,
+      source: data.sources?.institutionalFlows ?? "Unavailable",
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : "ERROR"

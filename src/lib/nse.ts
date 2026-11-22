@@ -1,33 +1,63 @@
 // src/lib/nse.ts
 import { cacheGet, cacheSet } from "./redis"
-import { fetchYahooTickerQuote } from "./prices"
+import { fetchGiftNiftyQuote, fetchYahooTickerQuote } from "./prices"
 import { PreMarketData } from "@/types"
 
-export async function fetchNSE(path: string) {
-  let cookies = await cacheGet<string>("nse:cookie")
+const NSE_REQUEST_TIMEOUT_MS = 5000
+let nseCookieRequest: Promise<string> | null = null
 
-  if (!cookies) {
-    const cookieRes = await fetch("https://www.nseindia.com", {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Accept": "text/html,application/xhtml+xml",
-        "Accept-Language": "en-US,en;q=0.9",
+function normalizeCookies(setCookieHeader: string): string {
+  return setCookieHeader
+    .split(/,(?=\s*[^;,]+=)/)
+    .map((cookie) => cookie.split(";")[0].trim())
+    .filter(Boolean)
+    .join("; ")
+}
+
+async function getNseCookies(): Promise<string> {
+  const cached = await cacheGet<string>("nse:cookie")
+  if (cached) return normalizeCookies(cached)
+
+  if (!nseCookieRequest) {
+    nseCookieRequest = (async () => {
+      const response = await fetch("https://www.nseindia.com", {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "Accept": "text/html,application/xhtml+xml",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+        signal: AbortSignal.timeout(NSE_REQUEST_TIMEOUT_MS),
+        cache: "no-store",
+      })
+      if (!response.ok) throw new Error(`NSE session request returned ${response.status}`)
+
+      const cookies = normalizeCookies(response.headers.get("set-cookie") || "")
+      if (cookies) await cacheSet("nse:cookie", cookies, 1800)
+      return cookies
+    })()
+    nseCookieRequest.then(
+      () => {
+        nseCookieRequest = null
       },
-      cache: "no-store",
-    })
-    cookies = cookieRes.headers.get("set-cookie") || ""
-    if (cookies) {
-      await cacheSet("nse:cookie", cookies, 1800) // Cache cookie for 30 min
-    }
+      () => {
+        nseCookieRequest = null
+      }
+    )
   }
 
+  return nseCookieRequest
+}
+
+export async function fetchNSE(path: string) {
+  const cookieHeader = await getNseCookies()
   const res = await fetch(`https://www.nseindia.com${path}`, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
       "Accept": "application/json, text/plain, */*",
       "Referer": "https://www.nseindia.com/",
-      "Cookie": cookies,
+      "Cookie": cookieHeader,
     },
+    signal: AbortSignal.timeout(NSE_REQUEST_TIMEOUT_MS),
     cache: "no-store",
   })
 
@@ -35,7 +65,79 @@ export async function fetchNSE(path: string) {
   return res.json()
 }
 
+type FiiDiiCashFlows = {
+  fiiCash: number | null
+  diiCash: number | null
+  netCashInflow: number | null
+  date: string | null
+  source: "NSE India" | "Unavailable"
+}
+
+const UNAVAILABLE_FII_DII: FiiDiiCashFlows = {
+  fiiCash: null,
+  diiCash: null,
+  netCashInflow: null,
+  date: null,
+  source: "Unavailable",
+}
+
+function parseFlowValue(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  if (typeof value !== "string") return null
+  const parsed = Number(value.replace(/,/g, "").trim())
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+export async function getFiiDiiCashFlows(): Promise<FiiDiiCashFlows> {
+  const cacheKey = `fii-dii-cash:${new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date())}`
+  const cached = await cacheGet<FiiDiiCashFlows>(cacheKey)
+  if (cached) return cached
+
+  try {
+    const response = await fetchNSE("/api/fiidiiTradeReact")
+    const rows: Array<{ category?: unknown; netValue?: unknown; date?: unknown }> = Array.isArray(response)
+      ? response
+      : Array.isArray(response?.data)
+        ? response.data
+        : []
+    const fii = rows.find((row) =>
+      typeof row.category === "string" && /fii|fpi/i.test(row.category)
+    )
+    const dii = rows.find((row) =>
+      typeof row.category === "string" && /^dii$/i.test(row.category)
+    )
+    const fiiNet = parseFlowValue(fii?.netValue)
+    const diiNet = parseFlowValue(dii?.netValue)
+    if (fiiNet === null || diiNet === null) {
+      throw new Error("NSE returned incomplete FII/DII cash-flow rows")
+    }
+
+    const result: FiiDiiCashFlows = {
+      fiiCash: fiiNet,
+      diiCash: diiNet,
+      netCashInflow: fiiNet + diiNet,
+      date: String(fii?.date || dii?.date || "") || null,
+      source: "NSE India",
+    }
+    await cacheSet(cacheKey, result, 600)
+    return result
+  } catch (error) {
+    console.warn(
+      "NSE FII/DII data unavailable:",
+      error instanceof Error ? error.message : String(error)
+    )
+    await cacheSet(cacheKey, UNAVAILABLE_FII_DII, 300)
+    return UNAVAILABLE_FII_DII
+  }
+}
+
 export const FALLBACK_PREMARKET_DATA: PreMarketData = {
+  giftNiftyQuote: null,
   giftNiftyPrice: 24910.5,
   giftNiftyChange: 0.58,
   giftNiftyChangePts: 142.3,
@@ -60,11 +162,10 @@ export const FALLBACK_PREMARKET_DATA: PreMarketData = {
   vixChangePts: -0.55,
   vixPercentile: 18,
   vixLabel: "Low",
-  fiiCash: -412.5,
-  fiiFutures: 12450,
-  diiCash: 2845.2,
-  diiFutures: 4110,
-  netCashInflow: 2432.7,
+  fiiCash: null,
+  diiCash: null,
+  netCashInflow: null,
+  institutionalFlowsDate: null,
   movers: [
     {
       symbol: "TATASTEEL",
@@ -101,24 +202,52 @@ export const FALLBACK_PREMARKET_DATA: PreMarketData = {
   ],
 }
 
-export async function getPreMarketTelemetry(): Promise<PreMarketData> {
+let preMarketRequest: Promise<PreMarketData> | null = null
+
+export function getPreMarketTelemetry(): Promise<PreMarketData> {
+  if (preMarketRequest) return preMarketRequest
+
+  const request = loadPreMarketTelemetry()
+  preMarketRequest = request
+  request.then(
+    () => {
+      if (preMarketRequest === request) preMarketRequest = null
+    },
+    () => {
+      if (preMarketRequest === request) preMarketRequest = null
+    }
+  )
+  return request
+}
+
+async function loadPreMarketTelemetry(): Promise<PreMarketData> {
   const dateKey = `pre-market:${new Date().toISOString().split("T")[0]}`
   const cached = await cacheGet<PreMarketData>(dateKey)
   if (cached?.sources) return cached
 
-  let indicesData: { data?: {
+  const indicesPromise: Promise<{ data?: {
     index?: string
     last?: number
     percentChange?: number
     variation?: number
     dayHigh?: number
     dayLow?: number
-  }[] } | null = null
-  try {
-    indicesData = await fetchNSE("/api/allIndices")
-  } catch {
-    indicesData = null
-  }
+  }[] } | null> = fetchNSE("/api/allIndices").catch((error) => {
+    console.warn(
+      "NSE index data unavailable:",
+      error instanceof Error ? error.message : String(error)
+    )
+    return null
+  })
+
+  const [giftNiftyQuote, fiiDiiFlows, indicesData] = await Promise.all([
+    fetchGiftNiftyQuote().catch((error) => {
+      console.error("GIFT Nifty quote fetch failed:", error)
+      return null
+    }),
+    getFiiDiiCashFlows(),
+    indicesPromise,
+  ])
 
   try {
     const vixRow = indicesData?.data?.find(
@@ -134,6 +263,9 @@ export async function getPreMarketTelemetry(): Promise<PreMarketData> {
     ])
     const liveData: PreMarketData = {
       ...FALLBACK_PREMARKET_DATA,
+      giftNiftyQuote,
+      ...fiiDiiFlows,
+      institutionalFlowsDate: fiiDiiFlows.date,
       giftNiftyPrice: niftyRow?.last ?? FALLBACK_PREMARKET_DATA.giftNiftyPrice,
       giftNiftyChange: niftyRow?.percentChange ?? FALLBACK_PREMARKET_DATA.giftNiftyChange,
       giftNiftyChangePts: niftyRow?.variation ?? FALLBACK_PREMARKET_DATA.giftNiftyChangePts,
@@ -167,7 +299,7 @@ export async function getPreMarketTelemetry(): Promise<PreMarketData> {
         dow: dow ? "Yahoo Finance" : "Sample",
         sp500: sp500 ? "Yahoo Finance" : "Sample",
         nikkei: nikkei ? "Yahoo Finance" : "Sample",
-        institutionalFlows: "Sample",
+        institutionalFlows: fiiDiiFlows.source,
         movers: "Sample",
       },
     }
@@ -176,13 +308,16 @@ export async function getPreMarketTelemetry(): Promise<PreMarketData> {
   } catch {
     return {
       ...FALLBACK_PREMARKET_DATA,
+      giftNiftyQuote,
+      ...fiiDiiFlows,
+      institutionalFlowsDate: fiiDiiFlows.date,
       sources: {
         nifty: "Sample",
         vix: "Sample",
         dow: "Sample",
         sp500: "Sample",
         nikkei: "Sample",
-        institutionalFlows: "Sample",
+        institutionalFlows: fiiDiiFlows.source,
         movers: "Sample",
       },
     }

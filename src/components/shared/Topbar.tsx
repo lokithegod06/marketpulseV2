@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { signOut } from "next-auth/react"
-import { Bell, LogOut, Menu, Search } from "lucide-react"
+import { Bell, LogOut, Menu, Moon, Search, Sun } from "lucide-react"
 import { useUiStore } from "@/store/uiStore"
 import { formatSignedINR } from "@/lib/utils"
 
@@ -22,6 +22,7 @@ type NiftySnapshot = {
 
 export function Topbar({ userName, plan, onMenuClick, isSidebarOpen }: TopbarProps) {
   const { searchQuery, setSearchQuery, dayUnrealizedPnl } = useUiStore()
+  const [theme, setTheme] = useState<"dark" | "light">("dark")
   const [clock, setClock] = useState("09:12 AM IST")
   const [pnlError, setPnlError] = useState(false)
   const [nifty, setNifty] = useState<NiftySnapshot>({
@@ -36,6 +37,20 @@ export function Topbar({ userName, plan, onMenuClick, isSidebarOpen }: TopbarPro
     .join("")
     .slice(0, 2)
     .toUpperCase()
+
+  useEffect(() => {
+    const savedTheme = document.documentElement.dataset.theme
+    if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme)
+  }, [])
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark"
+    const root = document.documentElement
+    root.dataset.theme = nextTheme
+    root.classList.toggle("dark", nextTheme === "dark")
+    window.localStorage.setItem("market-pulse-theme", nextTheme)
+    setTheme(nextTheme)
+  }
 
   useEffect(() => {
     const update = () => {
@@ -111,7 +126,7 @@ export function Topbar({ userName, plan, onMenuClick, isSidebarOpen }: TopbarPro
   }, [])
 
   return (
-    <header className="z-30 flex h-14 min-h-14 items-center justify-between gap-2 border-b border-border bg-[#080b13]/85 px-3 backdrop-blur-md sm:px-4 lg:px-6">
+    <header className="z-30 flex h-14 min-h-14 items-center justify-between gap-2 border-b border-border bg-surface-base/85 px-3 backdrop-blur-md sm:px-4 lg:px-6">
       <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         <button
           type="button"
@@ -195,11 +210,32 @@ export function Topbar({ userName, plan, onMenuClick, isSidebarOpen }: TopbarPro
 
         <button
           type="button"
+          role="switch"
+          aria-checked={theme === "light"}
+          aria-label="Light theme"
+          title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          onClick={toggleTheme}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-low text-text-secondary transition-colors hover:text-text-primary sm:w-12"
+        >
+          <span className="flex items-center gap-1.5" aria-hidden="true">
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            <span className="relative hidden h-4 w-6 rounded-full bg-surface-high sm:block">
+              <span
+                className={`absolute left-0.5 top-0.5 h-3 w-3 rounded-full bg-accent-blue transition-transform ${
+                  theme === "light" ? "translate-x-2" : "translate-x-0"
+                }`}
+              />
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
           className="relative hidden h-8 w-8 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-surface-low hover:text-text-primary md:flex"
           title="Real-time alerts"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#ff697b]" />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent-red" />
         </button>
 
         <Link

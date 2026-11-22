@@ -26,17 +26,21 @@ export function PortfolioSummary({
       </div>
       <div className="bg-surface-low border border-border rounded-xl p-5">
         <div className="text-[11px] text-text-secondary">Total P&L</div>
-        <div className="text-[22px] font-semibold font-mono text-accent-green mt-1">
-          +₹{totalPnl.toLocaleString("en-IN")}
+        <div className={`text-[22px] font-semibold font-mono mt-1 ${totalPnl >= 0 ? "text-accent-green" : "text-accent-red"}`}>
+          {totalPnl >= 0 ? "+" : "−"}₹{Math.abs(totalPnl).toLocaleString("en-IN")}
         </div>
-        <div className="text-xs font-mono text-accent-green mt-0.5">+{totalPnlPct.toFixed(2)}%</div>
+        <div className={`text-xs font-mono mt-0.5 ${totalPnlPct >= 0 ? "text-accent-green" : "text-accent-red"}`}>
+          {totalPnlPct >= 0 ? "+" : ""}{totalPnlPct.toFixed(2)}%
+        </div>
       </div>
       <div className="bg-surface-low border border-border rounded-xl p-5">
         <div className="text-[11px] text-text-secondary">Day&apos;s Change</div>
-        <div className="text-[22px] font-semibold font-mono text-accent-green mt-1">
-          +₹{dayChange.toLocaleString("en-IN")}
+        <div className={`text-[22px] font-semibold font-mono mt-1 ${dayChange >= 0 ? "text-accent-green" : "text-accent-red"}`}>
+          {dayChange >= 0 ? "+" : "−"}₹{Math.abs(dayChange).toLocaleString("en-IN")}
         </div>
-        <div className="text-xs font-mono text-accent-green mt-0.5">+1.42% today</div>
+        <div className={`text-xs font-mono mt-0.5 ${dayChange >= 0 ? "text-accent-green" : "text-accent-red"}`}>
+          today
+        </div>
       </div>
     </div>
   )

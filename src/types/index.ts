@@ -27,6 +27,16 @@ export interface TradeRecord {
 }
 
 export interface PreMarketData {
+  giftNiftyQuote: {
+    price: number
+    changePoints: number
+    changePct: number
+    previousClose: number
+    high: number
+    low: number
+    updatedAt: string
+    source: "TradingView"
+  } | null
   giftNiftyPrice: number
   giftNiftyChange: number
   giftNiftyChangePts: number
@@ -51,11 +61,10 @@ export interface PreMarketData {
   vixChangePts: number
   vixPercentile: number
   vixLabel: "Low" | "Medium" | "High"
-  fiiCash: number
-  fiiFutures: number
-  diiCash: number
-  diiFutures: number
-  netCashInflow: number
+  fiiCash: number | null
+  diiCash: number | null
+  netCashInflow: number | null
+  institutionalFlowsDate: string | null
   movers: PreMarketMover[]
   sources?: {
     nifty: "NSE India" | "Sample"
@@ -63,7 +72,7 @@ export interface PreMarketData {
     dow: "Yahoo Finance" | "Sample"
     sp500: "Yahoo Finance" | "Sample"
     nikkei: "Yahoo Finance" | "Sample"
-    institutionalFlows: "Sample"
+    institutionalFlows: "NSE India" | "Unavailable" | "Sample"
     movers: "Sample"
   }
 }
@@ -99,6 +108,23 @@ export interface NewsItem {
   publishedAt: string
   score: number
   catalyst: string | null
+}
+
+export interface MarketHotPick {
+  headlineId: string
+  source: string
+  title: string
+  link: string
+  publishedAt: string
+  whyItMatters: string
+  possibleImpact: string
+  watchFor: string
+}
+
+export interface MarketHotPicksDigest {
+  session: "MORNING" | "EVENING"
+  generatedAt: string
+  items: MarketHotPick[]
 }
 
 export interface JournalAiFeedback {

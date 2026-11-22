@@ -30,19 +30,19 @@ export function BiasCard({
       <p className="text-[13px] text-text-secondary leading-relaxed mb-4">{bias.reasoning}</p>
       <div className="text-[11px] text-text-muted mb-2.5">Intraday Pivot Projections (Nifty Spot)</div>
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-[#0b0f19] border border-border rounded-lg p-2.5">
+        <div className="bg-surface-base border border-border rounded-lg p-2.5">
           <div className="text-[10px] text-text-muted">Resistance 1</div>
           <div className="text-[13px] font-mono text-accent-red mt-0.5">{bias.pivots.r1.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</div>
         </div>
-        <div className="bg-[#0b0f19] border border-border rounded-lg p-2.5">
+        <div className="bg-surface-base border border-border rounded-lg p-2.5">
           <div className="text-[10px] text-text-muted">Resistance 2</div>
           <div className="text-[13px] font-mono text-accent-red mt-0.5">{bias.pivots.r2.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</div>
         </div>
-        <div className="bg-[#0b0f19] border border-border rounded-lg p-2.5">
+        <div className="bg-surface-base border border-border rounded-lg p-2.5">
           <div className="text-[10px] text-text-muted">Support 1</div>
           <div className="text-[13px] font-mono text-accent-green mt-0.5">{bias.pivots.s1.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</div>
         </div>
-        <div className="bg-[#0b0f19] border border-border rounded-lg p-2.5">
+        <div className="bg-surface-base border border-border rounded-lg p-2.5">
           <div className="text-[10px] text-text-muted">Support 2</div>
           <div className="text-[13px] font-mono text-accent-green mt-0.5">{bias.pivots.s2.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</div>
         </div>

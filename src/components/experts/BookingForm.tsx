@@ -109,7 +109,7 @@ export function BookingForm() {
 
       <button
         type="submit"
-        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent-blue px-5 py-3 text-xs font-semibold text-[#051321] transition-colors hover:bg-[#bae6fd]"
+        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent-blue px-5 py-3 text-xs font-semibold text-accent-contrast transition-colors hover:brightness-110"
       >
         Email slot request
         <ArrowRight className="h-4 w-4" />

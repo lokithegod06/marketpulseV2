@@ -62,7 +62,7 @@ export default async function ExpertsPage() {
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
                 href="/pricing"
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-blue px-5 py-3 text-xs font-semibold text-[#051321] transition-colors hover:bg-[#bae6fd]"
+                className="inline-flex items-center gap-2 rounded-lg bg-accent-blue px-5 py-3 text-xs font-semibold text-accent-contrast transition-colors hover:brightness-110"
               >
                 Explore Pro
                 <ArrowRight className="h-4 w-4" />

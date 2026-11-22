@@ -4,11 +4,41 @@
 
 :root {
   color-scheme: dark;
+  --surface-base: 225 44% 5%;
+  --surface-low: 224 35% 12%;
+  --surface-mid: 222 38% 17%;
+  --surface-high: 222 29% 18%;
+  --border: 223 23% 19%;
+  --text-primary: 214 32% 91%;
+  --text-secondary: 215 20% 65%;
+  --text-muted: 215 16% 47%;
+  --accent-blue: 199 94% 74%;
+  --accent-green: 158 64% 52%;
+  --accent-red: 0 94% 80%;
+  --accent-yellow: 43 96% 56%;
+  --accent-contrast: 205 100% 9%;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --surface-base: 210 40% 98%;
+  --surface-low: 0 0% 100%;
+  --surface-mid: 210 40% 96%;
+  --surface-high: 214 32% 91%;
+  --border: 214 25% 85%;
+  --text-primary: 222 47% 11%;
+  --text-secondary: 215 25% 28%;
+  --text-muted: 215 16% 40%;
+  --accent-blue: 201 96% 32%;
+  --accent-green: 160 84% 24%;
+  --accent-red: 0 72% 42%;
+  --accent-yellow: 38 92% 30%;
+  --accent-contrast: 0 0% 100%;
 }
 
 body {
-  background-color: #080b13;
-  color: #e2e8f0;
+  background-color: hsl(var(--surface-base));
+  color: hsl(var(--text-primary));
   font-family: var(--font-inter), Inter, system-ui, sans-serif;
 }
 
@@ -20,6 +50,6 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #252c3d;
+  background: hsl(var(--border));
   border-radius: 3px;
 }

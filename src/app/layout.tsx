@@ -13,6 +13,14 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
 })
 
+const themeInitScript = `
+  const savedTheme = localStorage.getItem("market-pulse-theme")
+  if (savedTheme === "light") {
+    document.documentElement.dataset.theme = "light"
+    document.documentElement.classList.remove("dark")
+  }
+`
+
 export const metadata: Metadata = {
   title: "Market Pulse — Institutional Pre-Market Intelligence & Trading Terminal",
   description:
@@ -25,7 +33,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" data-theme="dark" className={`dark ${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="bg-surface-base text-text-primary antialiased selection:bg-accent-blue/20 selection:text-accent-blue">
         <Providers>{children}</Providers>
       </body>

@@ -25,6 +25,7 @@ export function TradeForm({
   const [quantity, setQuantity] = useState("")
   const [lots, setLots] = useState(1)
   const [strategyTag, setStrategyTag] = useState("")
+  const [tradeTime, setTradeTime] = useState("")
   const [checks, setChecks] = useState<DisciplineCheckItem[]>(DEFAULT_CHECKS)
   const [notes, setNotes] = useState("")
   const [submissionError, setSubmissionError] = useState("")
@@ -61,6 +62,7 @@ export function TradeForm({
       quantity: qtyNum,
       lots,
       strategyTag,
+      tradeTime,
       disciplineChecks: checks,
       notes,
     }
@@ -80,6 +82,7 @@ export function TradeForm({
       setExitPrice("")
       setQuantity("")
       setStrategyTag("")
+      setTradeTime("")
       setNotes("")
     } catch (error) {
       setSubmissionError(error instanceof Error ? error.message : "Failed to save trade.")
@@ -145,7 +148,7 @@ export function TradeForm({
             type="number"
             required
             min="0.01"
-            step="0.05"
+            step="any"
             value={entryPrice}
             onChange={(e) => setEntryPrice(e.target.value)}
             className="w-full bg-surface-base border border-border rounded-lg px-3 py-2 text-xs font-mono text-text-primary"
@@ -156,10 +159,20 @@ export function TradeForm({
           <input
             type="number"
             min="0.01"
-            step="0.05"
+            step="any"
             value={exitPrice}
             onChange={(e) => setExitPrice(e.target.value)}
             className="w-full bg-surface-base border border-border rounded-lg px-3 py-2 text-xs font-mono text-text-primary"
+          />
+        </div>
+
+        <div>
+          <label className="text-[11px] text-text-secondary block mb-1">Trade Time</label>
+          <input
+            type="time"
+            value={tradeTime}
+            onChange={(e) => setTradeTime(e.target.value)}
+            className="w-full bg-surface-base border border-border rounded-lg px-3 py-2 text-xs text-text-primary"
           />
         </div>
         <div>
@@ -236,6 +249,7 @@ export function TradeForm({
           <option>Momentum Chasing</option>
           <option>Iron Condor</option>
           <option>Swing Pullback</option>
+          <option>Other</option>
         </select>
       </div>
 
@@ -257,7 +271,7 @@ export function TradeForm({
       <button
         type="submit"
         disabled={saving}
-        className="w-full py-2.5 rounded-lg bg-accent-blue text-[#001e2f] font-semibold text-xs hover:bg-[#bae6fd] transition-colors disabled:opacity-60"
+        className="w-full py-2.5 rounded-lg bg-accent-blue text-accent-contrast font-semibold text-xs hover:brightness-110 transition-colors disabled:opacity-60"
       >
         {saving ? "Saving Trade…" : "Save & Audit Trade"}
       </button>

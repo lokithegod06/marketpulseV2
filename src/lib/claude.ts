@@ -1,24 +1,25 @@
-import Anthropic from "@anthropic-ai/sdk"
+import Groq from 'groq-sdk';
 
-export const isClaudeConfigured = (): boolean => {
-  const key = process.env.ANTHROPIC_API_KEY
-  return Boolean(key && key.startsWith("sk-ant-") && key !== "sk-ant-xxx")
+export const groq = process.env.GROQ_API_KEY
+  ? new Groq({ apiKey: process.env.GROQ_API_KEY })
+  : null;
+
+export function isClaudeConfigured() {
+  return Boolean(process.env.GROQ_API_KEY)
 }
 
-export const claude = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || "sk-ant-demo-placeholder",
-})
-
-export async function callClaude(systemPrompt: string, userMessage: string): Promise<string> {
-  if (!isClaudeConfigured()) {
-    throw new Error("CLAUDE_NOT_CONFIGURED")
+export async function callClaude(systemPrompt: string, userMessage: string) {
+  if (!groq) {
+    throw new Error("GROQ_API_KEY is not configured");
   }
-  const response = await claude.messages.create({
-    model: "claude-sonnet-4-6",
+
+  const response = await groq.chat.completions.create({
+    model: 'openai/gpt-oss-120b',
     max_tokens: 1024,
-    messages: [{ role: "user", content: userMessage }],
-    system: systemPrompt,
-  })
-  const firstBlock = response.content[0]
-  return firstBlock && firstBlock.type === "text" ? firstBlock.text : ""
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userMessage },
+    ],
+  });
+  return response.choices[0]?.message?.content ?? '';
 }

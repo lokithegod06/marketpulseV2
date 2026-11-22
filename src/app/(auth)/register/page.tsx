@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -11,25 +12,41 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError("")
     try {
-      await fetch("/api/auth/register", {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, handle, email, password }),
       })
+
+      const data = await response.json()
+      if (!response.ok) {
+        setError(typeof data.error === "string" ? data.error : "Unable to create your account.")
+        return
+      }
+
+      await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
       router.push("/dashboard")
+    } catch {
+      setError("Unable to create your account. Please try again.")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-surface-base flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-surface-low border border-border rounded-2xl p-8 shadow-2xl">
+    <div className="min-h-screen bg-surface-base flex items-center justify-center p-3 sm:p-6">
+      <div className="w-full max-w-md bg-surface-low border border-border rounded-2xl p-5 sm:p-8 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <Link href="/" className="flex items-center gap-2">
             <svg width="28" height="20" viewBox="0 0 100 40" fill="none">
@@ -47,6 +64,12 @@ export default function RegisterPage() {
         <p className="text-xs text-text-secondary mb-6">
           Zero credit card required to start your 14-day trial.
         </p>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-accent-red/10 border border-accent-red/30 text-xs text-accent-red">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -96,7 +119,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-accent-blue text-[#001e2f] font-semibold text-xs hover:bg-[#bae6fd] transition-colors"
+            className="w-full py-2.5 rounded-lg bg-accent-blue text-accent-contrast font-semibold text-xs hover:brightness-110 transition-colors"
           >
             {loading ? "Creating Account…" : "Create Account & Open Terminal"}
           </button>

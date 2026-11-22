@@ -26,6 +26,23 @@ const FALLBACK_FEEDBACK: JournalAiFeedback = {
   },
 }
 
+function parseFeedback(rawResponse: string): JournalAiFeedback {
+  const jsonMatch = rawResponse.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error("AI returned no coaching JSON.")
+  const result = JSON.parse(jsonMatch[0]) as Partial<JournalAiFeedback>
+  if (
+    !result.positivePattern ||
+    !result.leakDetected ||
+    !result.recommendation ||
+    typeof result.positivePattern.title !== "string" ||
+    typeof result.leakDetected.title !== "string" ||
+    typeof result.recommendation.title !== "string"
+  ) {
+    throw new Error("AI returned an incomplete coaching response.")
+  }
+  return result as JournalAiFeedback
+}
+
 export async function POST(_req: NextRequest) {
   try {
     const user = await requirePro()
@@ -42,7 +59,7 @@ export async function POST(_req: NextRequest) {
     }
 
     if (!isClaudeConfigured()) {
-      return NextResponse.json({ error: "Configure ANTHROPIC_API_KEY to enable trade coaching." }, { status: 503 })
+      return NextResponse.json({ error: "Configure GROQ_API_KEY to enable trade coaching." }, { status: 503 })
     }
 
     const trades = await db.trade.findMany({
@@ -75,7 +92,7 @@ ${JSON.stringify(
 Focus on: behavioral patterns, discipline issues, timing problems, sizing errors.`
 
     const rawResponse = await callClaude(JOURNAL_ANALYSIS_SYSTEM, userMessage)
-    const feedback = JSON.parse(rawResponse) as JournalAiFeedback
+    const feedback = parseFeedback(rawResponse)
 
     await db.aiFeedback.create({
       data: {
@@ -87,7 +104,13 @@ Focus on: behavioral patterns, discipline issues, timing problems, sizing errors
 
     return NextResponse.json({ feedback, remainingQuota: rate.remaining })
   } catch (error) {
-    const status = error instanceof Error && error.message === "UNAUTHORIZED" ? 401 : 500
-    return NextResponse.json({ error: "Failed to generate trade coaching." }, { status })
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "Please sign in to request journal analysis." }, { status: 401 })
+    }
+    if (error instanceof Error && error.message === "UPGRADE_REQUIRED") {
+      return NextResponse.json({ error: "Pro subscription is required for AI journal analysis." }, { status: 402 })
+    }
+    console.error("Journal AI analysis failed:", error)
+    return NextResponse.json({ error: "Failed to generate journal analysis. Check the AI provider configuration and retry." }, { status: 502 })
   }
 }

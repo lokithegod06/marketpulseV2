@@ -115,13 +115,23 @@ export async function checkDisciplineRules(userId: string, _latestTrade?: unknow
     },
   })
 
+  const rules = await db.disciplineRule.findMany({
+    where: { userId, isActive: true },
+  })
+  const maxTradesRule = rules.find((rule) => rule.ruleType === "MAX_TRADES_PER_DAY")
+  const stopLossRule = rules.find((rule) => rule.ruleType === "HARD_STOP_LOSS")
+  const maxTradesLimit = Number((maxTradesRule?.value as { maxTrades?: number })?.maxTrades || 3)
+  const maxDailyLoss = Number((stopLossRule?.value as { maxLoss?: number })?.maxLoss || 5000)
+
   const evaluation = evaluateTradesAgainstRules(
     tradesToday.map((t) => ({
       direction: t.direction,
       pnl: t.pnl ? Number(t.pnl) : 0,
       disciplineChecks: (t.disciplineChecks as { label: string; checked: boolean }[]) || [],
       createdAt: t.createdAt,
-    }))
+    })),
+    maxTradesLimit,
+    maxDailyLoss
   )
 
   const todayDate = new Date(new Date().toISOString().split("T")[0])

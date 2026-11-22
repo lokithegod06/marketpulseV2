@@ -16,9 +16,11 @@ export function calculatePivots(spotClose: number): BiasPivots {
 export function generateReasoning(data: PreMarketData, bullPct: number): string {
   const dirWord = bullPct >= 60 ? "sustained above key support" : bullPct <= 40 ? "showing pre-open weakness" : "trading within a balanced consolidation band"
   const flowWord =
-    data.diiCash > 1000
-      ? `aggressive DII cash buying (₹${data.diiCash.toLocaleString("en-IN")} Cr)`
-      : `institutional positioning (DII ₹${data.diiCash.toLocaleString("en-IN")} Cr)`
+    data.diiCash === null
+      ? "institutional cash-flow data unavailable"
+      : data.diiCash > 1000
+        ? `aggressive DII cash buying (₹${data.diiCash.toLocaleString("en-IN")} Cr)`
+        : `DII cash flow of ₹${data.diiCash.toLocaleString("en-IN")} Cr`
   const outcomeWord =
     bullPct >= 60
       ? "support a gap-up opening for Nifty & BankNifty."
@@ -26,17 +28,21 @@ export function generateReasoning(data: PreMarketData, bullPct: number): string 
       ? "warrant caution on aggressive long setups at open."
       : "favor range-bound straddle and VWAP reversion setups."
 
-  return `Gift Nifty premium ${dirWord} (${data.giftNiftyPrice.toLocaleString("en-IN")}) alongside ${flowWord}. Global cues (Dow ${data.dowChange >= 0 ? "+" : ""}${data.dowChange.toFixed(2)}%, VIX at ${data.vix.toFixed(2)}) ${outcomeWord}`
+  const indexCue = data.giftNiftyQuote
+    ? `GIFT Nifty ${data.giftNiftyQuote.changePct >= 0 ? "+" : ""}${data.giftNiftyQuote.changePct.toFixed(2)}%`
+    : `Nifty 50 spot proxy ${data.giftNiftyChange >= 0 ? "+" : ""}${data.giftNiftyChange.toFixed(2)}% (GIFT Nifty quote unavailable)`
+  return `${indexCue} ${dirWord} alongside ${flowWord}. Global cues (Dow ${data.dowChange >= 0 ? "+" : ""}${data.dowChange.toFixed(2)}%, VIX at ${data.vix.toFixed(2)}) ${outcomeWord}`
 }
 
 export function calculateBias(data: PreMarketData): BiasResult {
   let bullScore = 0
   let bearScore = 0
 
-  // Rule 1: Gift Nifty change
-  if (data.giftNiftyChange > 0.3) bullScore += 25
-  else if (data.giftNiftyChange > 0) bullScore += 10
-  else if (data.giftNiftyChange < -0.3) bearScore += 25
+  // Use GIFT Nifty when available; otherwise use the labeled Nifty spot proxy.
+  const indexChange = data.giftNiftyQuote?.changePct ?? data.giftNiftyChange
+  if (indexChange > 0.3) bullScore += 25
+  else if (indexChange > 0) bullScore += 10
+  else if (indexChange < -0.3) bearScore += 25
   else bearScore += 10
 
   // Rule 2: Dow Jones previous close
@@ -51,13 +57,17 @@ export function calculateBias(data: PreMarketData): BiasResult {
   else bullScore += 5
 
   // Rule 4: DII Cash Flow
-  if (data.diiCash > 1000) bullScore += 20 // Strong DII buying
-  else if (data.diiCash > 0) bullScore += 8
-  else bearScore += 15
+  if (data.diiCash !== null) {
+    if (data.diiCash > 1000) bullScore += 20
+    else if (data.diiCash > 0) bullScore += 8
+    else bearScore += 15
+  }
 
-  // Rule 5: FII Net (futures)
-  if (data.fiiFutures > 5000) bullScore += 20
-  else if (data.fiiFutures < -5000) bearScore += 20
+  // Use reported FII cash flows; futures positioning is not supplied by this source.
+  if (data.fiiCash !== null) {
+    if (data.fiiCash > 1000) bullScore += 20
+    else if (data.fiiCash < -1000) bearScore += 20
+  }
 
   const total = bullScore + bearScore || 1
   const bullPct = Math.round((bullScore / total) * 100)

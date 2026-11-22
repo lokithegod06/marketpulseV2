@@ -7,5 +7,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized cron trigger" }, { status: 401 })
   }
   const telemetry = await getPreMarketTelemetry()
-  return NextResponse.json({ status: "FII/DII daily archive synced", netCashInflow: telemetry.netCashInflow })
+  return NextResponse.json({
+    status: "FII/DII daily data refreshed",
+    date: telemetry.institutionalFlowsDate,
+    source: telemetry.sources?.institutionalFlows ?? "Unavailable",
+  })
 }

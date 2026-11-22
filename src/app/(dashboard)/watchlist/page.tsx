@@ -97,7 +97,7 @@ export default function WatchlistPage() {
           <button
             type="submit"
             disabled={isAdding || !symbolInput.trim() || slotsRemaining === 0}
-            className="rounded-lg bg-accent-blue px-4 py-2 text-xs font-semibold text-[#001e2f] hover:bg-[#bae6fd] disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg bg-accent-blue px-4 py-2 text-xs font-semibold text-accent-contrast hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isAdding
               ? "Adding…"

@@ -18,7 +18,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#080b13] text-[#e2e8f0] flex flex-col selection:bg-[#7dd3fc]/20 selection:text-[#7dd3fc]">
       {/* TOP NAVIGATION BAR */}
       <header className="sticky top-0 z-50 h-16 bg-[#080b13]/90 backdrop-blur-md border-b border-[#1c2333]">
-        <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto h-full px-3 sm:px-6 flex items-center justify-between">
           <div className="flex items-center gap-10">
             <Link href="/" className="flex items-center gap-2.5">
               <svg width="28" height="20" viewBox="0 0 100 40" fill="none">
@@ -70,19 +70,20 @@ export default function LandingPage() {
             </nav>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2 sm:gap-5">
             <Link
               href="/login"
-              className="text-xs font-medium text-[#94a3b8] hover:text-white transition-colors"
+              className="shrink-0 text-[11px] sm:text-xs font-medium text-[#94a3b8] hover:text-white transition-colors"
             >
               Log in
             </Link>
             <Link
               href="/register"
-              className="inline-flex items-center gap-1.5 bg-[#7dd3fc] hover:bg-[#bae6fd] text-[#051321] font-semibold text-xs px-4 py-2 rounded-full transition-colors"
+              className="inline-flex shrink-0 items-center justify-center gap-1 bg-[#7dd3fc] hover:bg-[#bae6fd] text-[#051321] font-semibold text-[11px] sm:text-xs px-2.5 sm:px-4 py-2 rounded-full transition-colors"
             >
-              <span>Start 14-Day Free Trial</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span className="sm:hidden">Start Free</span>
+              <span className="hidden sm:inline">Start 14-Day Free Trial</span>
+              <ArrowRight className="hidden sm:block w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
